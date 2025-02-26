@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Mon Feb 17 09:51:00 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Thu Feb 26 22:29:39 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Thu Feb 26 22:35:30 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "include/include.h"
@@ -130,10 +130,6 @@ int main(int ac, char **av) {
         if (poll_fds[0].revents & POLLIN) {
             socklen_t client_len = sizeof(client_addr);
             client_socket = accept(server_socket, (struct sockaddr*) &client_addr, &client_len);
-            if (client_socket < 0) {
-                perror("Error with accept");
-                exit(EXIT_FAILURE);
-            }
 
             if (proc_count >= start_size) {
                 start_size += 1;
@@ -190,7 +186,7 @@ int main(int ac, char **av) {
                     clients[i].command = PASS;
                     if (strncmp(buffer, "HELP", 4) == 0)
                     clients[i].command = HELP;
-                if (strncmp(buffer, "quit", 4) == 0) {
+                if (strncmp(buffer, "QUIT", 4) == 0) {
                     clients[i].command = QUIT;
                     clients[i].has_data = true;
                     poll_fds[i].events |= POLLOUT;
@@ -224,11 +220,13 @@ int main(int ac, char **av) {
                 }
                 if (clients[i].command == HELP) {
                     write(poll_fds[i].fd, "214 Help message.\n", 19);
-                } else if (clients[i].command == USER) {
+                }
+                if (clients[i].command == USER) {
                     clients[i].username = malloc(sizeof(char) * strlen(clients[i].data) + 1);
                     strcpy(clients[i].username, clients[i].data);
                     write(poll_fds[i].fd, "331 User name okay, need password.\n", 36);
-                } else if (clients[i].command == PASS) {
+                }
+                if (clients[i].command == PASS) {
                     printf("username : %s\n", clients[i].username);
                     printf("strcmp : %d\n", strcmp(clients[i].username, "Anonymous"));
                     if (clients[i].username == NULL) {
@@ -246,7 +244,8 @@ int main(int ac, char **av) {
                     } else {
                         write(poll_fds[i].fd, "530 Login incorrect.\n", 21);
                     }
-                } else if (clients[i].command == PASV) {
+                }
+                if (clients[i].command == PASV) {
                     char *pasv = malloc(1024);
                     
                     socklen_t addr_len = sizeof(server_address_control);
@@ -278,15 +277,13 @@ int main(int ac, char **av) {
                     sprintf(pasv, "227 Entering Passive Mode (%s,%d,%d).\n", ip_pasv(ip_str), port1, port2);
                     write(poll_fds[i].fd, pasv, strlen(pasv));
                     free(pasv);
-                } else if (clients[i].command == QUIT) {
-                    strcpy(clients[i].data, "221 Goodbye.\n");
-                    write(poll_fds[i].fd, clients[i].data, strlen(clients[i].data));
+                }
+                if (clients[i].command == QUIT) {
+                    write(poll_fds[i].fd, "221 Service closing control connection.\n", 40);
                     close(poll_fds[i].fd);
                     poll_fds[i] = poll_fds[proc_count - 1];
                     clients[i] = clients[proc_count - 1];
                     proc_count--;
-                } else {
-                    write(poll_fds[i].fd, clients[i].data, strlen(clients[i].data));
                 }
                 clients[i].has_data = false;
                 poll_fds[i].events &= ~POLLOUT;
