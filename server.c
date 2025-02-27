@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Mon Feb 17 09:51:00 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Thu Feb 26 22:35:30 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Feb 27 10:48:55 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "include/include.h"
@@ -96,8 +96,8 @@ int main(int ac, char **av) {
     accounts_t *accounts = start_accounts();
     int proc_count = 1;
 
-    if (ac != 2) {
-        printf("Usage: %s <port>\n", av[0]);
+    if (ac != 3) {
+        printf("Usage: ./my_ftp <port> <path>\n");
         exit(EXIT_FAILURE);
     }
 
@@ -200,7 +200,8 @@ int main(int ac, char **av) {
                 }
                 if (strncmp(buffer, "PASV", 4) == 0)
                     clients[i].command = PASV;
-            
+                if (strncmp(buffer, "CWD", 3) == 0)
+                    clients[i].command = CWD;
                 if (clients[i].data != NULL)
                     free(clients[i].data);
                 clients[i].data = malloc(sizeof(char) * (strlen(buffer) - 4));
@@ -227,11 +228,9 @@ int main(int ac, char **av) {
                     write(poll_fds[i].fd, "331 User name okay, need password.\n", 36);
                 }
                 if (clients[i].command == PASS) {
-                    printf("username : %s\n", clients[i].username);
-                    printf("strcmp : %d\n", strcmp(clients[i].username, "Anonymous"));
                     if (clients[i].username == NULL) {
                         write(poll_fds[i].fd, "332 Need account for login.\n", 29);
-                    } else if (strncmp(clients[i].username, "Anonymous", 9) == 0) {
+                    } else if (strncmp(clients[i].username, "Anonymous", 9) == 0 && strlen(clients[i].data + 1) == 0) {
                         clients[i].is_login = true;
                         clients[i].account_logged->username = strdup(clients[i].username);
                         clients[i].account_logged->password = strdup("");
@@ -284,10 +283,15 @@ int main(int ac, char **av) {
                     poll_fds[i] = poll_fds[proc_count - 1];
                     clients[i] = clients[proc_count - 1];
                     proc_count--;
+                } 
+                if (clients[i].command == NONE) {
+                    write(poll_fds[i].fd, clients[i].data, strlen(clients[i].data));
                 }
+                clients[i].command = NONE;
                 clients[i].has_data = false;
                 poll_fds[i].events &= ~POLLOUT;
             }
+            
         }
     }
 

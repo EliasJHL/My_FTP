@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Mon Feb 17 16:22:22 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Thu Feb 26 22:26:44 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Thu Feb 26 22:42:44 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef INCLUDE_H_
@@ -33,6 +33,7 @@
         USER = 3,
         PASS = 4,
         HELP = 5,
+        CWD = 6,
     };
     
     typedef struct accounts_s {
