@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Mon Feb 17 09:51:00 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Feb 27 10:48:55 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Feb 27 11:00:00 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "include/include.h"
@@ -25,7 +25,9 @@ char *ip_pasv(char *str) {
 
 bool command_exists(char *c) {
     if (strncmp(c, "USER", 4) == 0 || strncmp(c, "PASS", 4) == 0 ||
-        strncmp("PASV", c, 4) == 0 || strncmp("quit", c, 4) == 0) {
+        strncmp("PASV", c, 4) == 0 || strncmp("quit", c, 4) == 0 ||
+        strncmp("HELP", c, 4) == 0 || strncmp("CWD", c, 3) == 0 ||
+        strncmp("RETR", c, 4) == 0) {
         return true;
     }
     return false;
@@ -202,6 +204,8 @@ int main(int ac, char **av) {
                     clients[i].command = PASV;
                 if (strncmp(buffer, "CWD", 3) == 0)
                     clients[i].command = CWD;
+                if (strncmp(buffer, "RETR", 4) == 0)
+                    clients[i].command = RETR;
                 if (clients[i].data != NULL)
                     free(clients[i].data);
                 clients[i].data = malloc(sizeof(char) * (strlen(buffer) - 4));
@@ -272,6 +276,8 @@ int main(int ac, char **av) {
                         perror("Error on listen for data connection");
                         exit(EXIT_FAILURE);
                     }
+
+                    clients[i].pasv_fd = data_socket;
                     
                     sprintf(pasv, "227 Entering Passive Mode (%s,%d,%d).\n", ip_pasv(ip_str), port1, port2);
                     write(poll_fds[i].fd, pasv, strlen(pasv));
@@ -284,6 +290,26 @@ int main(int ac, char **av) {
                     clients[i] = clients[proc_count - 1];
                     proc_count--;
                 } 
+                if (clients[i].command == RETR) {
+                    printf("Retrieving file %s\n", clients[i].data);
+                    FILE *file = fopen(clients[i].data, "r");
+                    char *buffer = malloc(1024);
+                    
+                    if (file == NULL) {
+                        write(poll_fds[i].fd, "550 File not found.\n", 19);
+                        continue;
+                    }
+                    write(poll_fds[i].fd, "150 File status okay; about to open data connection.\n", 53);
+                    int data_fd = accept(clients[i].pasv_fd, NULL, NULL);
+                    
+                    while (fgets(buffer, 1024, file) != NULL) {
+                        write(data_fd, buffer, strlen(buffer));
+                    }
+                    write(poll_fds[i].fd, "226 Closing data connection.\n", 29);
+                    close(data_fd);
+                    fclose(file);
+                    free(buffer);
+                }
                 if (clients[i].command == NONE) {
                     write(poll_fds[i].fd, clients[i].data, strlen(clients[i].data));
                 }

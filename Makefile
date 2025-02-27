@@ -5,7 +5,7 @@
 ## Makefile
 ##
 
-NAME	=	my_ftp
+NAME	=	myftp
 
 SRC	=	server.c
 
