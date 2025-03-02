@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Mon Feb 17 09:51:00 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Feb 27 11:00:00 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Mon Mar 2 18:55:53 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "include/include.h"
@@ -291,23 +291,23 @@ int main(int ac, char **av) {
                     proc_count--;
                 } 
                 if (clients[i].command == RETR) {
-                    printf("Retrieving file %s\n", clients[i].data);
+                    clients[i].data[strlen(clients[i].data) - 2] = '\0';
+                    printf("Retrieving file: %s\n", clients[i].data);
                     FILE *file = fopen(clients[i].data, "r");
                     char *buffer = malloc(1024);
                     
                     if (file == NULL) {
-                        write(poll_fds[i].fd, "550 File not found.\n", 19);
-                        continue;
+                        write(poll_fds[i].fd, "550 File not found.\n", 20);
+                    } else {
+                        write(poll_fds[i].fd, "150 File status okay; about to open data connection.\n", 53);
+                        int data_fd = accept(clients[i].pasv_fd, NULL, NULL);
+                        
+                        while (fgets(buffer, 1024, file) != NULL) {
+                            write(data_fd, buffer, strlen(buffer));
+                        }
+                        write(poll_fds[i].fd, "226 Closing data connection.\n", 29);
+                        fclose(file);
                     }
-                    write(poll_fds[i].fd, "150 File status okay; about to open data connection.\n", 53);
-                    int data_fd = accept(clients[i].pasv_fd, NULL, NULL);
-                    
-                    while (fgets(buffer, 1024, file) != NULL) {
-                        write(data_fd, buffer, strlen(buffer));
-                    }
-                    write(poll_fds[i].fd, "226 Closing data connection.\n", 29);
-                    close(data_fd);
-                    fclose(file);
                     free(buffer);
                 }
                 if (clients[i].command == NONE) {
