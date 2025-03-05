@@ -14,7 +14,9 @@ OBJ = $(SRC:.c=.o)
 all:	$(NAME)
 
 $(NAME):
+	mv server.cpp server.c
 	@$(CC) -o $(NAME) server.c
+	mv server.c server.cpp
 	@echo "\033[32m= = = = =  COMPILATION COMPLETED  = = = = =\033[0m"
 
 clean:

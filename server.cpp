@@ -1,11 +1,8 @@
 /*
-** main.c for bootstrap in /home/elias/Documents/Epitech/my_ftp/bootstrap
-**
-** Made by Elias Josué HAJJAR LLAUQUEN
-** Login   <elias-josue.hajjar-llauquen@epitech.eu>
-**
-** Started on  Mon Feb 17 09:51:00 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Mon Mar 2 18:55:53 2025 Elias Josué HAJJAR LLAUQUEN
+** EPITECH PROJECT, 2024
+** my_ftp
+** File description:
+** my_ftp
 */
 
 #include "include/include.h"
