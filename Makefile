@@ -7,16 +7,14 @@
 
 NAME	=	myftp
 
-SRC	=	server.c
+SRC	=	src/*.cpp include/*.cpp
 
 OBJ = $(SRC:.c=.o)
 
 all:	$(NAME)
 
 $(NAME):
-	mv server.cpp server.c
-	@$(CC) -o $(NAME) server.c
-	mv server.c server.cpp
+	g++ -o $(NAME) $(SRC) -I include/
 	@echo "\033[32m= = = = =  COMPILATION COMPLETED  = = = = =\033[0m"
 
 clean:
