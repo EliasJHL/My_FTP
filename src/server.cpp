@@ -24,7 +24,7 @@ bool command_exists(std::string c) {
 }
 
 void start_accounts(std::vector<myftp::Accounts> &accounts) {
-    accounts.push_back(myftp::Accounts("Anonymous", ""));
+    accounts.push_back(myftp::Accounts("Anonymous", " "));
     accounts.push_back(myftp::Accounts());
 }
 
@@ -64,7 +64,7 @@ int main(int ac, char **av) {
         exit(EXIT_FAILURE);
     }
 
-    // ne pas oublier -> permet de réutiliser le port
+    // TOASK ne pas oublier -> permet de réutiliser le port -> demander si utile
     int option = 1;
     if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) {
         exit(EXIT_FAILURE);
@@ -96,7 +96,7 @@ int main(int ac, char **av) {
     signal(SIGINT, signal_process);
 
     while (1) {
-        int poll_count = poll(poll_fds.data(), poll_fds.size(), 10);
+        int poll_count = poll(poll_fds.data(), poll_fds.size(), 1000);
 
         if (poll_fds[0].revents & POLLIN) {
             socklen_t client_len = sizeof(client_addr);
@@ -134,8 +134,18 @@ int main(int ac, char **av) {
                     command.assign(buffer, len);
                 }
 
-                printf("Received: %s", command.c_str());
                 if (clients[client_index].set_command(command.substr(0, 4))) {
+                    size_t pos = command.find(' ');
+                    std::string argument;
+                    if (pos != std::string::npos) {
+                        if (command.substr(pos + 1) == "\r\n") {
+                            argument = " ";
+                        } else {
+                            argument = command.substr(pos + 1);
+                        }
+                        argument.erase(argument.find_last_not_of("\r\n") + 1);
+                    }
+                    clients[client_index].set_data(argument);
                     poll_fds[i].events |= POLLOUT;
                     continue;
                 }
@@ -144,39 +154,11 @@ int main(int ac, char **av) {
                 if (!clients[client_index].has_to_process()) {
                     continue;
                 }
-                // if (clients[i].command == QUIT) {
-                //     write(poll_fds[i].fd, "221 Service closing control connection.\n", 40);
-                //     close(poll_fds[i].fd);
-                //     poll_fds[i] = poll_fds[proc_count - 1];
-                //     clients[i] = clients[proc_count - 1];
-                //     proc_count--;
-                // } 
-                clients[client_index].process_command(accounts, server_address_control);
-                // if (clients[i].command == RETR) {
-                //     clients[i].data[strlen(clients[i].data) - 2] = '\0';
-                //     printf("Retrieving file: %s\n", clients[i].data);
-                //     FILE *file = fopen(clients[i].data, "r");
-                //     char *buffer = malloc(1024);
-                    
-                //     if (file == NULL) {
-                //         write(poll_fds[i].fd, "550 File not found.\n", 20);
-                //     } else {
-                //         write(poll_fds[i].fd, "150 File status okay; about to open data connection.\n", 53);
-                //         int data_fd = accept(clients[i].pasv_fd, NULL, NULL);
-                        
-                //         while (fgets(buffer, 1024, file) != NULL) {
-                //             write(data_fd, buffer, strlen(buffer));
-                //         }
-                //         write(poll_fds[i].fd, "226 Closing data connection.\n", 29);
-                //         fclose(file);
-                //     }
-                //     free(buffer);
-                // }
+                clients[client_index].process_command(accounts, server_address_control, poll_fds, clients, i);
                 poll_fds[i].events &= ~POLLOUT;
             }
         }
     }
-
     close(server_socket);
     return 0;
 }

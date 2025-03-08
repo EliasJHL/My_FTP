@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 6 23:25:45 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sat Mar 7 11:03:26 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sun Mar 8 23:26:08 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Client.hpp"
@@ -18,7 +18,7 @@ myftp::Client::Client(int fd) {
     _command = NONE;
     _account_logged = new Accounts;
     _temp_username = "";
-    _data = "220 Service ready for new user.\n";
+    _data = "220 Service ready for new user.\r\n";
 };
 
 myftp::Client::~Client() {
@@ -66,7 +66,7 @@ bool myftp::Client::set_command(std::string command) {
     }
 
     if (!command_exists) {
-        write(_fd, "500 Unknown command.\n", 21);
+        write(_fd, "500 Unknown command.\r\n", 21);
         return false;
     }
 
@@ -74,7 +74,7 @@ bool myftp::Client::set_command(std::string command) {
                                _command == HELP || _command == QUIT;
 
     if (!_is_login && !no_need_login) {
-        write(_fd, "530 Please login with USER and PASS.\n", 37);
+        write(_fd, "530 Please login with USER and PASS.\r\n", 38);
         return false;
     }
     _has_to_process = true;
@@ -83,7 +83,7 @@ bool myftp::Client::set_command(std::string command) {
 
 bool myftp::Client::check_if_login() {
     if (!_is_login) {
-        write(_fd, "530 Please login with USER and PASS.\n", 37);
+        write(_fd, "530 Please login with USER and PASS.\r\n", 38);
         return false;
     }
     return true;
@@ -98,31 +98,34 @@ bool check_logins(std::vector<myftp::Accounts> accounts, char *username, char *p
     return false;
 }
 
-void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struct sockaddr_in server_address_control) {
+void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struct sockaddr_in server_address_control, std::vector<struct pollfd> &poll_fds, std::vector<myftp::Client> &clients, int i) {
     if (_command == HELP) {
-        write(_fd, "214 Help message.\n", 19);
+        write(_fd, "214 Help message.\r\n", 20);
     }
     if (_command == USER) {
         _temp_username = _data;
-        write(_fd, "331 User name okay, need password.\n", 36);
+        write(_fd, "331 User name okay, need password.\r\n", 37);
     }
     if (_command == PASS) {
         if (_temp_username == "" || _temp_username.empty()) {
-            write(_fd, "332 Need account for login.\n", 29);
-        } else if (_temp_username == "Anonymous" && _data == "") {
+            write(_fd, "332 Need account for login.\r\n", 30);
+        } else if (_temp_username == "Anonymous" && _data == " ") {
             _is_login = true;
-            _account_logged->add_account("Anonymous", "");
-            write(_fd, "230 User logged in, proceed.\n", 30);
+            _account_logged->add_account("Anonymous", " ");
+            write(_fd, "230 User logged in, proceed.\r\n", 31);
         } else if (check_logins(accounts, (char*)_temp_username.c_str(), (char*)_data.c_str())) {
             _is_login = true;
             _account_logged->add_account(_temp_username, _data);
-            write(_fd, "230 User logged in, proceed.\n", 30);
+            write(_fd, "230 User logged in, proceed.\r\n", 31);
         } else {
-            write(_fd, "530 Login incorrect.\n", 21);
+            write(_fd, "530 Login incorrect.\r\n", 22);
         }
     }
     if (_command == QUIT) {
-        write(_fd, "221 Goodbye.\n", 13);
+        write(_fd, "221 Goodbye.\r\n", 14);
+        close(poll_fds[i].fd);
+        poll_fds.erase(poll_fds.begin() + i);
+        clients.erase(clients.begin() + i);
         close(_fd);
         if (_pasv_fd != -1) {
             close(_pasv_fd);
@@ -138,24 +141,39 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
         char ip_str[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &server_address_control.sin_addr, ip_str, INET_ADDRSTRLEN);
         
-        int port = 50000 + (rand() % 10000);
-        int port1 = port / 256;
-        int port2 = port % 256;
-
+        int port = 0;
+        
+        
         int data_socket = socket(AF_INET, SOCK_STREAM, 0);
         struct sockaddr_in data_addr;
         data_addr.sin_family = AF_INET;
-        data_addr.sin_port = htons(port);
         data_addr.sin_addr.s_addr = INADDR_ANY;
-
-        if (bind(data_socket, (struct sockaddr*) &data_addr, sizeof(data_addr)) < 0) {
-            perror("Error binding data socket");
-            exit(EXIT_FAILURE);
+        
+        bool is_available = false;
+        int tries = 0;
+        while (!is_available && tries < 20) {
+            port = 50000 + (rand() % 10000);
+            data_addr.sin_port = htons(port);
+            
+            if (bind(data_socket, (struct sockaddr*) &data_addr, sizeof(data_addr)) == 0) {
+                is_available = true;
+            } else {
+                tries++;
+            }
         }
-
+        
+        if (!is_available) {
+            close(data_socket);
+            write(_fd, "425 Can't open data connection.\r\n", 33);
+            return;
+        }
+        
+        int port1 = port / 256;
+        int port2 = port % 256;
+        
         if (listen(data_socket, 1) < 0) {
-            perror("Error on listen for data connection");
-            exit(EXIT_FAILURE);
+            write(_fd, "425 Can't open data connection.\r\n", 33);
+            return;
         }
         
         _pasv_fd = data_socket;
@@ -163,7 +181,7 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
         ip_adress.assign(ip_str);
         
         std::replace(ip_adress.begin(), ip_adress.end(), '.', ',');
-        sprintf(pasv, "227 Entering Passive Mode (%s,%d,%d).\n", ip_adress.c_str(), port1, port2);
+        sprintf(pasv, "227 Entering Passive Mode (%s,%d,%d).\r\n", ip_adress.c_str(), port1, port2);
         write(_fd, pasv, strlen(pasv));
     }
     if (_command == RETR) {
@@ -171,17 +189,18 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
         std::ifstream dataFile;
         dataFile.open(_data, std::ios::in);
         if (dataFile.is_open()) {
-            write(_fd, "150 File status okay; about to open data connection.\n", 53);
+            write(_fd, "150 File status okay; about to open data connection.\r\n", 54);
             int data_fd = accept(_pasv_fd, NULL, NULL);
             std::string line;
             while (std::getline(dataFile, line)) {
                 write(data_fd, line.c_str(), line.size());
+                write(data_fd, "\n", 1);
             }
             dataFile.close();
-            write(_fd, "226 Closing data connection.\n", 30);
+            write(_fd, "226 Closing data connection.\r\n", 31);
             close(data_fd);
         } else {
-            write(_fd, "550 File not found.\n", 20);
+            write(_fd, "550 File not found.\r\n", 21);
         }
     }
     if (_command == NONE) {

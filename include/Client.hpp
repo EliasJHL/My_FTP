@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 6 23:23:31 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 6 23:41:11 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sun Mar 8 23:21:22 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef CLIENT_HPP_
@@ -45,7 +45,7 @@ namespace myftp {
             bool has_to_process();
             bool set_command(std::string command);
             bool check_if_login();
-            void process_command(std::vector<myftp::Accounts> accounts, struct sockaddr_in server_address_control);
+            void process_command(std::vector<myftp::Accounts> accounts, struct sockaddr_in server_address_control, std::vector<struct pollfd> &poll_fds, std::vector<myftp::Client> &clients, int i);
         private:
             int _fd;
             int _pasv_fd;
