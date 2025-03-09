@@ -5,12 +5,12 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 6 23:25:45 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sun Mar 8 23:26:08 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Mon Mar 9 01:25:18 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Client.hpp"
 
-myftp::Client::Client(int fd) {
+myftp::Client::Client(int fd, std::string current_path) {
     _fd = fd;
     _pasv_fd = -1;
     _has_to_process = true;
@@ -18,6 +18,8 @@ myftp::Client::Client(int fd) {
     _command = NONE;
     _account_logged = new Accounts;
     _temp_username = "";
+    _home_path = "";
+    _current_path = current_path;
     _data = "220 Service ready for new user.\r\n";
 };
 
@@ -33,7 +35,7 @@ bool myftp::Client::has_to_process() {
     return _has_to_process;
 }
 
-bool myftp::Client::set_command(std::string command) {
+bool myftp::Client::set_command(std::string command, std::string command_three_char) {
     bool command_exists = false;
 
     if (command == "USER") {
@@ -56,22 +58,39 @@ bool myftp::Client::set_command(std::string command) {
         _command = PASV;
         command_exists = true;
     }
-    if (command == "CWD") {
+    if (command_three_char == "CWD") {
         _command = CWD;
+        command_exists = true;
+    }
+    if (command_three_char == "PWD") {
+        _command = PWD;
         command_exists = true;
     }
     if (command == "RETR") {
         _command = RETR;
         command_exists = true;
     }
+    if (command == "NOOP") {
+        _command = NOOP;
+        command_exists = true;
+    }
+    if (command == "CDUP") {
+        _command = CDUP;
+        command_exists = true;
+    }
+    if (command == "DELE") {
+        _command = DELE;
+        command_exists = true;
+    }
 
     if (!command_exists) {
-        write(_fd, "500 Unknown command.\r\n", 21);
+        write(_fd, "500 Unknown commano.\r\n", 22);
         return false;
     }
 
-    const bool no_need_login = _command == USER || _command == PASS || 
-                               _command == HELP || _command == QUIT;
+    bool no_need_login = _command == USER || _command == PASS || 
+                         _command == HELP || _command == QUIT ||
+                         _command == NOOP;
 
     if (!_is_login && !no_need_login) {
         write(_fd, "530 Please login with USER and PASS.\r\n", 38);
@@ -185,6 +204,12 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
         write(_fd, pasv, strlen(pasv));
     }
     if (_command == RETR) {
+
+        if (_pasv_fd == -1) {
+            write(_fd, "425 Can't open data connection.\r\n", 33);
+            return;
+        }
+
         std::cout << "Retrieving file " << _data << std::endl;
         std::ifstream dataFile;
         dataFile.open(_data, std::ios::in);
@@ -201,6 +226,43 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
             close(data_fd);
         } else {
             write(_fd, "550 File not found.\r\n", 21);
+        }
+    }
+    if (_command == NOOP) {
+        write(_fd, "200 Command okay.\r\n", 19);
+    }
+    if (_command == PWD) {
+        std::string pwd;
+        pwd = "257 " + _current_path + " created.\r\n";
+        write(_fd, pwd.c_str(), pwd.size());
+    }
+    if (_command == CWD) {
+        char new_path[2048];
+        std::string temp_path = _current_path + "/" + _data;
+
+        if (chdir(temp_path.c_str()) == 0) {
+            getcwd(new_path, 2048);
+            _current_path = new_path;
+            write(_fd, "250 Requested file action okay, completed.\r\n", 44);
+        } else {
+            write(_fd, "550 Requested action not taken.\r\n", 34);
+        }
+    }
+    if (_command == CDUP) {
+        char new_path[2048];
+        if (chdir("..") == 0) {
+            getcwd(new_path, 2048);
+            _current_path = new_path;
+            write(_fd, "250 Requested file action okay, completed.\r\n", 44);
+        } else {
+            write(_fd, "550 Requested action not taken.\r\n", 34);
+        }
+    }
+    if (_command == DELE) {
+        if (remove(_data.c_str()) == 0) {
+            write(_fd, "250 Requested file action okay, completed.\r\n", 44);
+        } else {
+            write(_fd, "550 Requested action not taken.\r\n", 34);
         }
     }
     if (_command == NONE) {

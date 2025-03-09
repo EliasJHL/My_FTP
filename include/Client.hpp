@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 6 23:23:31 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sun Mar 8 23:21:22 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Mon Mar 9 01:21:03 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef CLIENT_HPP_
@@ -35,15 +35,19 @@ namespace myftp {
         HELP = 5,
         CWD = 6,
         RETR = 7,
+        NOOP = 8,
+        PWD = 9,
+        CDUP = 10,
+        DELE = 11
     };
     
     class Client {
         public:
-            Client(int fd);
+            Client(int fd, std::string current_path);
             ~Client();
             void set_data(std::string data);
             bool has_to_process();
-            bool set_command(std::string command);
+            bool set_command(std::string command, std::string command_three_char);
             bool check_if_login();
             void process_command(std::vector<myftp::Accounts> accounts, struct sockaddr_in server_address_control, std::vector<struct pollfd> &poll_fds, std::vector<myftp::Client> &clients, int i);
         private:
@@ -53,6 +57,8 @@ namespace myftp {
             bool _is_login;
             Accounts *_account_logged;
             std::string _temp_username;
+            std::string _home_path;
+            std::string _current_path;
             COMMAND _command;
             std::string _data;
     };
