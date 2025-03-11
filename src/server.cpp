@@ -13,17 +13,6 @@
 int server_socket;
 std::vector<struct pollfd> *g_poll_fds = nullptr;
 
-bool command_exists(std::string c) {
-    std::string command = c.substr(0, 4);
-
-    if (command == "USER" || command == "PASS" || command == "PASV" ||
-        command == "QUIT" || command == "HELP" || command == "CWD" || command == "RETR") {
-        return true;
-    }
-
-    return false;
-}
-
 void start_accounts(std::vector<myftp::Accounts> &accounts) {
     accounts.push_back(myftp::Accounts("Anonymous", " "));
     accounts.push_back(myftp::Accounts());
