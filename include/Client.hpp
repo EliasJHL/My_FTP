@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 6 23:23:31 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Mar 11 13:35:48 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Thu Mar 12 14:14:43 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef CLIENT_HPP_
@@ -21,6 +21,7 @@
 #include <cstring>
 #include <fstream>
 #include "Accounts.hpp"
+#include "Socket.hpp"
 
 namespace myftp {
 
@@ -39,13 +40,8 @@ namespace myftp {
         PWD = 9,
         CDUP = 10,
         DELE = 11,
-        PORT = 12
-    };
-
-    enum DATA_TRANSFER {
-        DATA_NONE = 0,
-        DATA_PASV = 1,
-        DATA_PORT = 2
+        PORT = 12,
+        LIST = 13
     };
     
     class Client {
@@ -57,14 +53,23 @@ namespace myftp {
             bool set_command(std::string command, std::string command_three_char);
             bool check_if_login();
             void process_command(std::vector<myftp::Accounts> accounts, struct sockaddr_in server_address_control, std::vector<struct pollfd> &poll_fds, std::vector<myftp::Client> &clients, int i);
+            
+            // Socket process
+            int get_fd();
+            int get_fd_data();
+            DATA_TRANSFER get_mode_data();
+            std::string get_ip();
+            std::string get_port();
+
+            void set_fd(int fd);
+            void set_fd_data(int fd);
+            void set_mode_data(DATA_TRANSFER data);
+            void set_port_data(std::string ip, std::string port);
+            
         private:
-            int _fd;
-            int _transfer_fd;
             bool _has_to_process;
             bool _is_login;
-            DATA_TRANSFER _data_transfer;
-            std::string _port_client_ip;
-            std::string _port_client_port;
+            Socket *_socket_data;
             Accounts *_account_logged;
             std::string _temp_username;
             std::string _home_path;

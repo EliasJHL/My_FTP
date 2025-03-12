@@ -5,18 +5,16 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 6 23:25:45 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Wed Mar 11 13:38:58 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Thu Mar 12 14:26:47 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Client.hpp"
 
 myftp::Client::Client(int fd, std::string current_path) {
-    _fd = fd;
-    _transfer_fd = -1;
+    _socket_data = new Socket(fd);
     _has_to_process = true;
     _is_login = false;
     _command = myftp::COMMAND::NONE;
-    _data_transfer = DATA_NONE;
     _account_logged = new Accounts;
     _temp_username = "";
     _home_path = "";
@@ -34,6 +32,42 @@ void myftp::Client::set_data(std::string data) {
 
 bool myftp::Client::has_to_process() {
     return _has_to_process;
+}
+
+int myftp::Client::get_fd() {
+    return _socket_data->get_client_fd();
+}
+
+int myftp::Client::get_fd_data() {
+    return _socket_data->get_data_fd();
+}
+
+myftp::DATA_TRANSFER myftp::Client::get_mode_data () {
+    return _socket_data->get_data_mode();
+}
+
+std::string myftp::Client::get_ip() {
+    return _socket_data->get_ip_data_mode();
+}
+
+std::string myftp::Client::get_port() {
+    return _socket_data->get_port_data_mode();
+}
+
+void myftp::Client::set_fd(int fd) {
+    _socket_data->set_fd(fd);
+}
+
+void myftp::Client::set_fd_data(int fd) {
+    _socket_data->set_data_fd(fd);
+}
+
+void myftp::Client::set_mode_data(DATA_TRANSFER data) {
+    _socket_data->set_mode_transfer(data);
+}
+
+void myftp::Client::set_port_data(std::string ip, std::string port) {
+    _socket_data->set_data_port_mode(ip, port);
 }
 
 bool myftp::Client::set_command(std::string command, std::string command_three_char) {
@@ -57,7 +91,7 @@ bool myftp::Client::set_command(std::string command, std::string command_three_c
     }
     if (command == "PASV") {
         _command = myftp::COMMAND::PASV;
-        _data_transfer = DATA_PASV;
+        set_mode_data(DATA_PASV);
         command_exists = true;
     }
     if (command_three_char == "CWD") {
@@ -86,12 +120,16 @@ bool myftp::Client::set_command(std::string command, std::string command_three_c
     }
     if (command == "PORT") {
         _command = myftp::COMMAND::PORT;
-        _data_transfer = DATA_PORT;
+        set_mode_data(DATA_PORT);
+        command_exists = true;
+    }
+    if (command == "LIST") {
+        _command = LIST;
         command_exists = true;
     }
 
     if (!command_exists) {
-        write(_fd, "500 Unknown commano.\r\n", 22);
+        write(get_fd(), "500 Unknown commano.\r\n", 22);
         return false;
     }
 
@@ -100,7 +138,7 @@ bool myftp::Client::set_command(std::string command, std::string command_three_c
                          _command == NOOP;
 
     if (!_is_login && !no_need_login) {
-        write(_fd, "530 Please login with USER and PASS.\r\n", 38);
+        write(get_fd(), "530 Please login with USER and PASS.\r\n", 38);
         return false;
     }
     _has_to_process = true;
@@ -109,7 +147,7 @@ bool myftp::Client::set_command(std::string command, std::string command_three_c
 
 bool myftp::Client::check_if_login() {
     if (!_is_login) {
-        write(_fd, "530 Please login with USER and PASS.\r\n", 38);
+        write(get_fd(), "530 Please login with USER and PASS.\r\n", 38);
         return false;
     }
     return true;
@@ -126,32 +164,32 @@ bool check_logins(std::vector<myftp::Accounts> accounts, char *username, char *p
 
 void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struct sockaddr_in server_address_control, std::vector<struct pollfd> &poll_fds, std::vector<myftp::Client> &clients, int i) {
     if (_command == HELP) {
-        write(_fd, "214 Help message.\r\n", 20);
+        write(get_fd(), "214 Help message.\r\n", 20);
     }
     if (_command == USER) {
         _temp_username = _data;
-        write(_fd, "331 User name okay, need password.\r\n", 37);
+        write(get_fd(), "331 User name okay, need password.\r\n", 37);
     }
     if (_command == PASS) {
         if (_temp_username == "" || _temp_username.empty()) {
-            write(_fd, "332 Need account for login.\r\n", 30);
+            write(get_fd(), "332 Need account for login.\r\n", 30);
         } else if (check_logins(accounts, (char*)_temp_username.c_str(), (char*)_data.c_str())) {
             _is_login = true;
             _account_logged->add_account(_temp_username, _data);
-            write(_fd, "230 User logged in, proceed.\r\n", 31);
+            write(get_fd(), "230 User logged in, proceed.\r\n", 31);
         } else {
-            write(_fd, "530 Login incorrect.\r\n", 23);
+            write(get_fd(), "530 Login incorrect.\r\n", 23);
             _temp_username.clear();
         }
     }
     if (_command == QUIT) {
-        write(_fd, "221 Goodbye.\r\n", 14);
+        write(get_fd(), "221 Goodbye.\r\n", 14);
         close(poll_fds[i].fd);
         poll_fds.erase(poll_fds.begin() + i);
         clients.erase(clients.begin() + i);
-        close(_fd);
-        if (_transfer_fd != -1) {
-            close(_transfer_fd);
+        close(get_fd());
+        if (get_fd_data() != -1) {
+            close(get_fd_data());
         }
     }
     if (_command == PASV) {
@@ -159,7 +197,7 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
         std::string ip_adress;
         
         socklen_t data_len = sizeof(server_address_control);
-        getsockname(_fd, (struct sockaddr*) &server_address_control, &data_len);
+        getsockname(get_fd(), (struct sockaddr*) &server_address_control, &data_len);
         
         char ip_str[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &server_address_control.sin_addr, ip_str, INET_ADDRSTRLEN);
@@ -187,7 +225,7 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
         
         if (!is_available) {
             close(data_socket);
-            write(_fd, "425 Can't open data connection.\r\n", 33);
+            write(get_fd(), "425 Can't open data connection.\r\n", 33);
             return;
         }
         
@@ -195,22 +233,23 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
         int port2 = port % 256;
         
         if (listen(data_socket, 1) < 0) {
-            write(_fd, "425 Can't open data connection.\r\n", 33);
+            write(get_fd(), "425 Can't open data connection.\r\n", 33);
             return;
         }
         
-        _transfer_fd = data_socket;
+        set_fd_data(data_socket);
 
         ip_adress.assign(ip_str);
         
         std::replace(ip_adress.begin(), ip_adress.end(), '.', ',');
         sprintf(pasv, "227 Entering Passive Mode (%s,%d,%d).\r\n", ip_adress.c_str(), port1, port2);
-        write(_fd, pasv, strlen(pasv));
+        write(get_fd(), pasv, strlen(pasv));
+        set_mode_data(DATA_NONE);
     }
     if (_command == RETR) {
-        if (_data_transfer == DATA_PASV) {
-            if (_transfer_fd == -1) {
-                write(_fd, "425 Can't open data connection.\r\n", 33);
+        if (get_mode_data() == DATA_PASV) {
+            if (get_fd_data() == -1) {
+                write(get_fd(), "425 Can't open data connection.\r\n", 33);
                 return;
             }
         
@@ -218,22 +257,22 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
             std::ifstream dataFile;
             dataFile.open(_data, std::ios::in);
             if (dataFile.is_open()) {
-                write(_fd, "150 File status okay; about to open data connection.\r\n", 54);
-                int data_fd = accept(_transfer_fd, NULL, NULL);
+                write(get_fd(), "150 File status okay; about to open data connection.\r\n", 54);
+                int data_fd = accept(get_fd_data(), NULL, NULL);
                 std::string line;
                 while (std::getline(dataFile, line)) {
                     write(data_fd, line.c_str(), line.size());
                     write(data_fd, "\n", 1);
                 }
                 dataFile.close();
-                write(_fd, "226 Closing data connection.\r\n", 31);
+                write(get_fd(), "226 Closing data connection.\r\n", 31);
                 close(data_fd);
             } else {
-                write(_fd, "550 File not found.\r\n", 21);
+                write(get_fd(), "550 File not found.\r\n", 21);
             }
-        } else if (_data_transfer == DATA_PORT) {
-            if (_port_client_ip == "" || _port_client_port == "") {
-                write(_fd, "425 Can't open data connection.\r\n", 33);
+        } else if (get_mode_data() == DATA_PORT) {
+            if (get_ip() == "" || get_port() == "") {
+                write(get_fd(), "425 Can't open data connection.\r\n", 33);
                 return;
             }
             std::cout << "Retrieving file " << _data << std::endl;
@@ -244,16 +283,16 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
                 struct sockaddr_in addr;
                 std::string line;
                 
-                write(_fd, "150 File status okay; about to open data connection.\r\n", 54);
+                write(get_fd(), "150 File status okay; about to open data connection.\r\n", 54);
                 
                 sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
                 
                 addr.sin_family = AF_INET;
-                addr.sin_port = htons(atoi(_port_client_port.c_str()));
-                addr.sin_addr.s_addr = inet_addr(_port_client_ip.c_str());
+                addr.sin_port = htons(atoi(get_port().c_str()));
+                addr.sin_addr.s_addr = inet_addr(get_ip().c_str());
 
                 if (connect(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
-                    write(_fd, "425 Can't open data connection.\r\n", 33);
+                    write(get_fd(), "425 Can't open data connection.\r\n", 33);
                     return ;
                 }
                 while(std::getline(dataFile, line)) {
@@ -261,22 +300,22 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
                     write(sock, "\n", 1);
                 }
                 dataFile.close();
-                write(_fd, "226 Closing data connection.\r\n", 31);
+                write(get_fd(), "226 Closing data connection.\r\n", 31);
                 close(sock);
             } else {
-                write(_fd, "550 File not found.\r\n", 21);
+                write(get_fd(), "550 File not found.\r\n", 21);
             }
         } else {
-            write(_fd, "425 Can't open data connection.\r\n", 33);
+            write(get_fd(), "425 Can't open data connection.\r\n", 33);
         }
     }
     if (_command == NOOP) {
-        write(_fd, "200 Command okay.\r\n", 19);
+        write(get_fd(), "200 Command okay.\r\n", 19);
     }
     if (_command == PWD) {
         std::string pwd;
         pwd = "257 " + _current_path + " created.\r\n";
-        write(_fd, pwd.c_str(), pwd.size());
+        write(get_fd(), pwd.c_str(), pwd.size());
     }
     if (_command == CWD) {
         char new_path[2048];
@@ -285,9 +324,9 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
         if (chdir(temp_path.c_str()) == 0) {
             getcwd(new_path, 2048);
             _current_path = new_path;
-            write(_fd, "250 Requested file action okay, completed.\r\n", 44);
+            write(get_fd(), "250 Requested file action okay, completed.\r\n", 44);
         } else {
-            write(_fd, "550 Requested action not taken.\r\n", 34);
+            write(get_fd(), "550 Requested action not taken.\r\n", 34);
         }
     }
     if (_command == CDUP) {
@@ -295,26 +334,26 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
         if (chdir("..") == 0) {
             getcwd(new_path, 2048);
             _current_path = new_path;
-            write(_fd, "250 Requested file action okay, completed.\r\n", 44);
+            write(get_fd(), "250 Requested file action okay, completed.\r\n", 44);
         } else {
-            write(_fd, "550 Requested action not taken.\r\n", 34);
+            write(get_fd(), "550 Requested action not taken.\r\n", 34);
         }
     }
     if (_command == DELE) {
         if (remove(_data.c_str()) == 0) {
-            write(_fd, "250 Requested file action okay, completed.\r\n", 44);
+            write(get_fd(), "250 Requested file action okay, completed.\r\n", 44);
         } else {
-            write(_fd, "550 Requested action not taken.\r\n", 34);
+            write(get_fd(), "550 Requested action not taken.\r\n", 34);
         }
     }
     if (_command == PORT) {
-        if (_data_transfer != DATA_PORT) {
-            write(_fd, "500 Passive is already running.\r\n", 33);
+        if (get_mode_data() != DATA_PORT) {
+            write(get_fd(), "500 Passive is already running.\r\n", 33);
             return;
         }
 
         socklen_t data_len = sizeof(server_address_control);
-        getsockname(_fd, (struct sockaddr*) &server_address_control, &data_len);
+        getsockname(get_fd(), (struct sockaddr*) &server_address_control, &data_len);
         std::string ip;
         int port;
         std::vector<std::string> args;
@@ -324,14 +363,11 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
             _data.erase(0, 1);
             _data.pop_back();
         } else {
-            write(_fd, "500 Syntax error, command unrecognized.\r\n", 41);
+            write(get_fd(), "500 Syntax error, command unrecognized.\r\n", 41);
             return;
         }
 
         std::cout << _data << std::endl;
-
-        // 500 Syntax error, command unrecognized.
-        // 502 Command not implemented.
         
         while ((pos = _data.find(',')) != std::string::npos) {
             arg = _data.substr(0, pos);
@@ -350,17 +386,52 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
         port = atoi(args[4].c_str()) * 256 + atoi(args[5].c_str());
 
         if (args.size() != 6) {
-            write(_fd, "501 Syntax error in parameters or arguments.\r\n", 47);
+            write(get_fd(), "501 Syntax error in parameters or arguments.\r\n", 47);
             return;
         }
 
-        _port_client_ip = ip;
-        _port_client_port = std::to_string(port);
+        set_port_data(ip, std::to_string(port));
 
-        write(_fd, "200 Command okay.\r\n", 19);
+        write(get_fd(), "200 Command okay.\r\n", 19);
+    }
+    if (_command == LIST) {
+        if (get_mode_data() == DATA_NONE) {
+            write(get_fd(), "425 Can't open data connection.\r\n", 33);
+            return;
+        }
+        char buffer[128];
+        std::string result = "";
+        FILE* pipe = popen("ls -l", "r");
+        if (!pipe) {
+            write(get_fd(), "501 Syntax error in parameters or arguments.\r\n", 47);
+            return;
+        }
+        while (fgets(buffer, sizeof buffer, pipe) != NULL) 
+            result += buffer;
+        pclose(pipe);
+        if (get_mode_data() == DATA_PASV) {
+            int data_fd = accept(get_fd_data(), NULL, NULL);
+            write(data_fd, result.c_str(), result.size());
+            close(data_fd);
+        } else if (get_mode_data() == DATA_PORT) {
+            int sock;
+            struct sockaddr_in addr;
+            sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+            addr.sin_family = AF_INET;
+            addr.sin_port = htons(atoi(get_port().c_str()));
+            addr.sin_addr.s_addr = inet_addr(get_ip().c_str());
+            if (connect(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
+                write(get_fd(), "425 Can't open data connection.\r\n", 33);
+                return;
+            }
+            write(sock, result.c_str(), result.size());
+            close(sock);
+        }
+        write(get_fd(), "226 Closing data connection.\r\n", 31);
+        set_mode_data(DATA_NONE);
     }
     if (_command == NONE) {
-        write(_fd, _data.c_str(), _data.size());
+        write(get_fd(), _data.c_str(), _data.size());
     }
     _has_to_process = false;
     _command = NONE;
