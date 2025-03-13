@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 15:38:36 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 15:46:41 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Mar 13 21:15:23 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "CwdCommand.hpp"
@@ -22,7 +22,8 @@ myftp::CwdCommand::~CwdCommand()
 void myftp::CwdCommand::execute(Client &client, Server &server, int i, std::string arg) {
     char new_path[2048];
     std::string temp_path = client.get_path() + "/" + arg;
-    if (chdir(temp_path.c_str()) == 0) {
+    int ret = chdir(temp_path.c_str());
+    if (ret != -1) {
         getcwd(new_path, 2048);
         client.set_path(std::string(new_path));
         write(client.get_fd(), "250 Requested file action okay, completed.\r\n", 44);

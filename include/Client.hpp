@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 6 23:23:31 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 15:12:43 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Mar 13 20:50:29 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef CLIENT_HPP_
@@ -20,6 +20,7 @@
 #include <string>
 #include <cstring>
 #include <fstream>
+#include <signal.h>
 #include "Accounts.hpp"
 #include "Socket.hpp"
 #include "Server.hpp"
@@ -37,7 +38,6 @@ namespace myftp {
             void set_data(std::string data);
             bool has_to_process();
             bool set_command(std::string command, std::string command_three_char);
-            bool check_if_login();
             void process_command(myftp::Server &server, int i);
             
             // Socket process
@@ -59,17 +59,18 @@ namespace myftp {
             std::string get_path();
 
             void login(std::string username, std::string password);
+            pid_t _transfer_pid;
             
             private:
-            bool _has_to_process;
-            bool _is_login;
-            Socket *_socket_data;
-            Accounts *_account_logged;
-            std::string _temp_username;
-            std::string _home_path;
-            std::string _current_path;
-            myftp::COMMAND _command;
-            std::string _data;
+                bool _has_to_process;
+                bool _is_login;
+                Socket *_socket_data;
+                Accounts *_account_logged;
+                std::string _temp_username;
+                std::string _home_path;
+                std::string _current_path;
+                myftp::COMMAND _command;
+                std::string _data;
     };
 }
 

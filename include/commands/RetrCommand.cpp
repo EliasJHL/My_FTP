@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 15:30:34 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 20:23:53 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Mar 13 21:31:43 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "RetrCommand.hpp"
@@ -20,20 +20,25 @@ myftp::RetrCommand::~RetrCommand()
 }
 
 void myftp::RetrCommand::execute(Client &client, Server &server, int i, std::string arg) {
-    pid_t pid;
+    if (client._transfer_pid != -1) {
+        kill(client._transfer_pid, SIGKILL);
+        client._transfer_pid = -1;
+    }
     
-    pid = fork();
+    pid_t pid = fork();
+
     if (pid == -1) {
         write(client.get_fd(), "550 Error sending files failed.\r\n", 33);
         return;
     }
     if (pid > 0) {
+        client._transfer_pid = pid;
         return;
     }
     if (client.get_mode_data() == DATA_PASV) {
         if (client.get_fd_data() == -1) {
             write(client.get_fd(), "425 Can't open data connection.\r\n", 33);
-            return;
+            exit(EXIT_SUCCESS);
         }
     
         std::cout << "Retrieving file " << arg << std::endl;
@@ -50,13 +55,15 @@ void myftp::RetrCommand::execute(Client &client, Server &server, int i, std::str
             dataFile.close();
             write(client.get_fd(), "226 Closing data connection.\r\n", 31);
             close(data_fd);
+            exit(EXIT_SUCCESS);
         } else {
             write(client.get_fd(), "550 File not found.\r\n", 21);
+            exit(EXIT_SUCCESS);
         }
     } else if (client.get_mode_data() == DATA_PORT) {
         if (client.get_ip() == "" || client.get_port() == "") {
             write(client.get_fd(), "425 Can't open data connection.\r\n", 33);
-            return;
+            exit(EXIT_SUCCESS);
         }
         std::cout << "Retrieving file " << arg << std::endl;
         std::ifstream dataFile;
@@ -75,21 +82,23 @@ void myftp::RetrCommand::execute(Client &client, Server &server, int i, std::str
             addr.sin_addr.s_addr = inet_addr(client.get_ip().c_str());
             if (connect(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
                 write(client.get_fd(), "425 Can't open data connection.\r\n", 33);
-                return;
+                exit(EXIT_SUCCESS);
             }
             while(std::getline(dataFile, line)) {
-                
                 write(sock, line.c_str(), line.size());
                 write(sock, "\n", 1);
             }
             dataFile.close();
             write(client.get_fd(), "226 Closing data connection.\r\n", 31);
             close(sock);
+            exit(EXIT_SUCCESS);
         } else {
             write(client.get_fd(), "550 File not found.\r\n", 21);
+            exit(EXIT_SUCCESS);
         }
     } else {
         write(client.get_fd(), "425 Can't open data connection.\r\n", 33);
+        exit(EXIT_SUCCESS);
     }
 };
 

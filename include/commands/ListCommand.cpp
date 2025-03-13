@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 15:19:04 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 20:23:37 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Mar 13 21:37:46 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "ListCommand.hpp"
@@ -20,18 +20,19 @@ myftp::ListCommand::~ListCommand()
 }
 
 void myftp::ListCommand::execute(Client &client, Server &server, int i, std::string arg) {
-    pid_t pid;
+    if (client._transfer_pid != -1) {
+        kill(client._transfer_pid, SIGKILL);
+        client._transfer_pid = -1;
+    }
     
-    pid = fork();
+    pid_t pid = fork();
+
     if (pid == -1) {
         write(client.get_fd(), "550 Error sending files failed.\r\n", 33);
         return;
     }
     if (pid > 0) {
-        return;
-    }
-    if (client.get_mode_data() == DATA_NONE) {
-        write(client.get_fd(), "425 Can't open data connection.\r\n", 33);
+        client._transfer_pid = pid;
         return;
     }
     char buffer[128];
@@ -39,15 +40,17 @@ void myftp::ListCommand::execute(Client &client, Server &server, int i, std::str
     FILE* pipe = popen("ls -l", "r");
     if (!pipe) {
         write(client.get_fd(), "501 Syntax error in parameters or arguments.\r\n", 47);
-        return;
+        exit(EXIT_SUCCESS);
     }
     while (fgets(buffer, sizeof buffer, pipe) != NULL) 
         result += buffer;
     pclose(pipe);
+    result = result.substr(result.find("\n") + 1);
     if (client.get_mode_data() == DATA_PASV) {
         int data_fd = accept(client.get_fd_data(), NULL, NULL);
         write(data_fd, result.c_str(), result.size());
         close(data_fd);
+        exit(EXIT_SUCCESS);
     } else if (client.get_mode_data() == DATA_PORT) {
         int sock;
         struct sockaddr_in addr;
@@ -57,13 +60,14 @@ void myftp::ListCommand::execute(Client &client, Server &server, int i, std::str
         addr.sin_addr.s_addr = inet_addr(client.get_ip().c_str());
         if (connect(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
             write(client.get_fd(), "425 Can't open data connection.\r\n", 33);
-            return;
+            exit(EXIT_SUCCESS);
         }
         write(sock, result.c_str(), result.size());
         close(sock);
+        exit(EXIT_SUCCESS);
     }
     write(client.get_fd(), "226 Closing data connection.\r\n", 31);
-    client.set_mode_data(DATA_NONE);
+    exit(EXIT_SUCCESS);
 };
 
 bool myftp::ListCommand::need_login() const {

@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 6 23:25:45 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 16:01:32 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Mar 13 21:20:18 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Client.hpp"
@@ -15,6 +15,7 @@ myftp::Client::Client(int fd, std::string current_path) {
     _socket_data = new Socket(fd);
     _has_to_process = true;
     _is_login = false;
+    _transfer_pid = -1;
     _command = myftp::COMMAND::NONE;
     _account_logged = new Accounts;
     _temp_username = "";
@@ -72,85 +73,40 @@ void myftp::Client::set_port_data(std::string ip, std::string port) {
 }
 
 bool myftp::Client::set_command(std::string command, std::string command_three_char) {
-    bool command_exists = false;
-
-    if (command == "USER") {
+    if (command == "USER")
         _command = USER;
-        command_exists = true;
-    }
-    if (command == "PASS") {
+    if (command == "PASS")
         _command = PASS;
-        command_exists = true;
-    }
-    if (command == "HELP") {
+    if (command == "HELP")
         _command = HELP;
-        command_exists = true;
-    }
-    if (command == "QUIT") {
+    if (command == "QUIT")
         _command = QUIT;
-        command_exists = true;
-    }
     if (command == "PASV") {
         _command = myftp::COMMAND::PASV;
-        set_mode_data(DATA_PASV);
-        command_exists = true;
+        if (_socket_data->get_data_mode() == DATA_NONE)
+            set_mode_data(DATA_PASV);
     }
-    if (command_three_char == "CWD") {
+    if (command_three_char == "CWD")
         _command = CWD;
-        command_exists = true;
-    }
-    if (command_three_char == "PWD") {
+    if (command_three_char == "PWD")
         _command = PWD;
-        command_exists = true;
-    }
-    if (command == "RETR") {
+    if (command == "RETR")
         _command = RETR;
-        command_exists = true;
-    }
-    if (command == "NOOP") {
+    if (command == "NOOP")
         _command = NOOP;
-        command_exists = true;
-    }
-    if (command == "CDUP") {
+    if (command == "CDUP")
         _command = CDUP;
-        command_exists = true;
-    }
-    if (command == "DELE") {
+    if (command == "DELE")
         _command = DELE;
-        command_exists = true;
-    }
     if (command == "PORT") {
         _command = myftp::COMMAND::PORT;
-        set_mode_data(DATA_PORT);
-        command_exists = true;
+        if (_socket_data->get_data_mode() == DATA_NONE)
+            set_mode_data(DATA_PORT);
     }
-    if (command == "LIST") {
+    if (command == "LIST")
         _command = LIST;
-        command_exists = true;
-    }
 
-    if (!command_exists) {
-        write(get_fd(), "500 Unknown command.\r\n", 22);
-        return false;
-    }
-
-    bool no_need_login = _command == USER || _command == PASS || 
-                         _command == HELP || _command == QUIT ||
-                         _command == NOOP;
-
-    if (!_is_login && !no_need_login) {
-        write(get_fd(), "530 Please login with USER and PASS.\r\n", 38);
-        return false;
-    }
     _has_to_process = true;
-    return true;
-}
-
-bool myftp::Client::check_if_login() {
-    if (!_is_login) {
-        write(get_fd(), "530 Please login with USER and PASS.\r\n", 38);
-        return false;
-    }
     return true;
 }
 
