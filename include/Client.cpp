@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 6 23:25:45 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 11:27:23 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Mar 13 12:11:51 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Client.hpp"
@@ -176,7 +176,7 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
         } else if (check_logins(accounts, (char*)_temp_username.c_str(), (char*)_data.c_str())) {
             _is_login = true;
             _account_logged->add_account(_temp_username, _data);
-            write(get_fd(), "230 User logged in, proceed.\r\n", 29);
+            write(get_fd(), "230 User logged in, proceed.\r\n", 30);
         } else {
             write(get_fd(), "530 Login incorrect.\r\n", 22);
             _temp_username.clear();
