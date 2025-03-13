@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 6 23:25:45 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Thu Mar 12 14:26:47 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Mar 13 11:27:23 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Client.hpp"
@@ -129,7 +129,7 @@ bool myftp::Client::set_command(std::string command, std::string command_three_c
     }
 
     if (!command_exists) {
-        write(get_fd(), "500 Unknown commano.\r\n", 22);
+        write(get_fd(), "500 Unknown command.\r\n", 22);
         return false;
     }
 
@@ -164,21 +164,21 @@ bool check_logins(std::vector<myftp::Accounts> accounts, char *username, char *p
 
 void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struct sockaddr_in server_address_control, std::vector<struct pollfd> &poll_fds, std::vector<myftp::Client> &clients, int i) {
     if (_command == HELP) {
-        write(get_fd(), "214 Help message.\r\n", 20);
+        write(get_fd(), "214 Help message.\r\n", 19);
     }
     if (_command == USER) {
         _temp_username = _data;
-        write(get_fd(), "331 User name okay, need password.\r\n", 37);
+        write(get_fd(), "331 User name okay, need password.\r\n", 36);
     }
     if (_command == PASS) {
         if (_temp_username == "" || _temp_username.empty()) {
-            write(get_fd(), "332 Need account for login.\r\n", 30);
+            write(get_fd(), "332 Need account for login.\r\n", 29);
         } else if (check_logins(accounts, (char*)_temp_username.c_str(), (char*)_data.c_str())) {
             _is_login = true;
             _account_logged->add_account(_temp_username, _data);
-            write(get_fd(), "230 User logged in, proceed.\r\n", 31);
+            write(get_fd(), "230 User logged in, proceed.\r\n", 29);
         } else {
-            write(get_fd(), "530 Login incorrect.\r\n", 23);
+            write(get_fd(), "530 Login incorrect.\r\n", 22);
             _temp_username.clear();
         }
     }
@@ -244,7 +244,6 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
         std::replace(ip_adress.begin(), ip_adress.end(), '.', ',');
         sprintf(pasv, "227 Entering Passive Mode (%s,%d,%d).\r\n", ip_adress.c_str(), port1, port2);
         write(get_fd(), pasv, strlen(pasv));
-        set_mode_data(DATA_NONE);
     }
     if (_command == RETR) {
         if (get_mode_data() == DATA_PASV) {
@@ -296,6 +295,7 @@ void myftp::Client::process_command(std::vector<myftp::Accounts> accounts, struc
                     return ;
                 }
                 while(std::getline(dataFile, line)) {
+                    
                     write(sock, line.c_str(), line.size());
                     write(sock, "\n", 1);
                 }
