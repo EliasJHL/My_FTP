@@ -7,7 +7,7 @@
 
 NAME	=	myftp
 
-SRC	=	src/*.cpp include/*.cpp
+SRC	=	src/*.cpp include/*.cpp include/commands/*.cpp
 
 OBJ = $(SRC:.c=.o)
 

@@ -6,7 +6,6 @@
 */
 
 #include "../include/Accounts.hpp"
-#include "../include/Client.hpp"
 #include "../include/Server.hpp"
 #include <signal.h>
 #include <filesystem>

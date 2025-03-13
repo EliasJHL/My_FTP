@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 6 23:23:31 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 12:11:27 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Mar 13 15:12:43 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef CLIENT_HPP_
@@ -22,27 +22,13 @@
 #include <fstream>
 #include "Accounts.hpp"
 #include "Socket.hpp"
+#include "Server.hpp"
+#include "commands/Factory.hpp"
 
 namespace myftp {
 
     class Accounts;
-    
-    enum COMMAND {
-        NONE = 0,
-        PASV = 1,
-        QUIT = 2,
-        USER = 3,
-        PASS = 4,
-        HELP = 5,
-        CWD = 6,
-        RETR = 7,
-        NOOP = 8,
-        PWD = 9,
-        CDUP = 10,
-        DELE = 11,
-        PORT = 12,
-        LIST = 13
-    };
+    class Server;
     
     class Client {
         public:
@@ -52,7 +38,7 @@ namespace myftp {
             bool has_to_process();
             bool set_command(std::string command, std::string command_three_char);
             bool check_if_login();
-            void process_command(std::vector<myftp::Accounts> accounts, struct sockaddr_in server_address_control, std::vector<struct pollfd> &poll_fds, std::vector<myftp::Client> &clients, int i);
+            void process_command(myftp::Server &server, int i);
             
             // Socket process
             int get_fd();
@@ -65,8 +51,16 @@ namespace myftp {
             void set_fd_data(int fd);
             void set_mode_data(DATA_TRANSFER data);
             void set_port_data(std::string ip, std::string port);
+
+            void set_temp_username(std::string);
+            std::string get_temp_username();
+
+            void set_path(std::string);
+            std::string get_path();
+
+            void login(std::string username, std::string password);
             
-        private:
+            private:
             bool _has_to_process;
             bool _is_login;
             Socket *_socket_data;
@@ -74,7 +68,7 @@ namespace myftp {
             std::string _temp_username;
             std::string _home_path;
             std::string _current_path;
-            COMMAND _command;
+            myftp::COMMAND _command;
             std::string _data;
     };
 }

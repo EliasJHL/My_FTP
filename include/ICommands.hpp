@@ -5,21 +5,28 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 11:30:35 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 11:37:24 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Mar 13 14:46:21 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef ICOMMANDS_HPP_
 # define ICOMMANDS_HPP_
 
-#include "Client.hpp"
+#include <vector>
+#include <unistd.h>
+#include <string>
+#include "CommandsEnum.hpp"
 
-//namespace myftp {
-//    class ICommands {
-//        public:
-//            virtual ~ICommands();
-//            virtual void execute(Client &client, ) = 0;
-//            virtual bool need_login() const = 0; 
-//    };
-//}
+namespace myftp {
+
+    class Client;
+    class Server;
+
+    class ICommands {
+        public:
+            virtual ~ICommands() = default;
+            virtual void execute(Client &client, Server &server, int i, std::string arg) = 0;
+            virtual bool need_login() const = 0; 
+    };
+}
 
 #endif /* !ICOMMANDS_HPP_ */
