@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 6 23:25:45 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 15:38:08 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Mar 13 16:01:32 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Client.hpp"
@@ -194,19 +194,4 @@ void myftp::Client::process_command(myftp::Server &server, int i) {
 
     _has_to_process = false;
     _command = NONE;
-    // if (_command == CWD) {
-    //     char new_path[2048];
-    //     std::string temp_path = _current_path + "/" + _data;
-
-    //     if (chdir(temp_path.c_str()) == 0) {
-    //         getcwd(new_path, 2048);
-    //         _current_path = new_path;
-    //         write(get_fd(), "250 Requested file action okay, completed.\r\n", 44);
-    //     } else {
-    //         write(get_fd(), "550 Requested action not taken.\r\n", 34);
-    //     }
-    // }
-    // _has_to_process = false
-    ;
-    // _command = NONE;
 }

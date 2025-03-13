@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 15:30:34 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 15:33:38 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Mar 13 20:23:53 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "RetrCommand.hpp"
@@ -20,6 +20,16 @@ myftp::RetrCommand::~RetrCommand()
 }
 
 void myftp::RetrCommand::execute(Client &client, Server &server, int i, std::string arg) {
+    pid_t pid;
+    
+    pid = fork();
+    if (pid == -1) {
+        write(client.get_fd(), "550 Error sending files failed.\r\n", 33);
+        return;
+    }
+    if (pid > 0) {
+        return;
+    }
     if (client.get_mode_data() == DATA_PASV) {
         if (client.get_fd_data() == -1) {
             write(client.get_fd(), "425 Can't open data connection.\r\n", 33);

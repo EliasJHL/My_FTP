@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 15:19:04 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 15:29:30 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Mar 13 20:23:37 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "ListCommand.hpp"
@@ -20,6 +20,16 @@ myftp::ListCommand::~ListCommand()
 }
 
 void myftp::ListCommand::execute(Client &client, Server &server, int i, std::string arg) {
+    pid_t pid;
+    
+    pid = fork();
+    if (pid == -1) {
+        write(client.get_fd(), "550 Error sending files failed.\r\n", 33);
+        return;
+    }
+    if (pid > 0) {
+        return;
+    }
     if (client.get_mode_data() == DATA_NONE) {
         write(client.get_fd(), "425 Can't open data connection.\r\n", 33);
         return;
