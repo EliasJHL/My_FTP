@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 15:02:58 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sat Mar 14 12:08:16 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 21:15:45 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "PortCommand.hpp"
@@ -30,12 +30,12 @@ void myftp::PortCommand::execute(Client &client, Server &server, int i, std::str
     std::string ip;
     int port;
 
-    std::regex const e{"\\([0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+\\)"};
+    std::regex const e{"([0-9]+),([0-9]+),([0-9]+),([0-9]+),([0-9]+),([0-9]+)"};
     std::smatch m;
     
-    if (std::regex_match(argument, m, e)) {
-        ip = m[0].str() + "." + m[1].str() + "." + m[2].str() + "." + m[3].str();
-        port = atoi(m[4].str().c_str()) * 256 + atoi(m[5].str().c_str());
+    if (std::regex_search(argument, m, e)) {
+        ip = m[1].str() + "." + m[2].str() + "." + m[3].str() + "." + m[4].str();
+        port = std::stoi(m[5].str()) * 256 + std::stoi(m[6].str());
         client.set_port_data(ip, std::to_string(port));
         write(client.get_fd(), "200 Command okay.\r\n", 19);
     } else {

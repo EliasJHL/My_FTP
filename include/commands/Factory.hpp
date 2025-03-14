@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 12:38:01 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 16:01:48 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 12:54:24 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef FACTORY_HPP_
@@ -30,7 +30,7 @@
 #include "CdupCommand.hpp"
 #include "PasvCommand.hpp"
 #include "PortCommand.hpp"
-//#include "StorCommand.hpp"
+#include "StorCommand.hpp"
 #include "DeleCommand.hpp"
 
 namespace myftp {

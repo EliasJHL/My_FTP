@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 6 23:25:45 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sat Mar 14 11:40:23 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 20:29:57 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Client.hpp"
@@ -84,6 +84,10 @@ bool myftp::Client::set_command(std::string command, std::string command_three_c
         _command = QUIT;
     if (command == "PASV") {
         _command = myftp::COMMAND::PASV;
+        if (_socket_data->get_data_mode() == DATA_PASV && _socket_data->get_data_fd() != -1) {
+            close(_socket_data->get_data_fd());
+            _socket_data->set_data_fd(-1);
+        }
         if (_socket_data->get_data_mode() == DATA_NONE)
             set_mode_data(DATA_PASV);
     }
@@ -104,6 +108,8 @@ bool myftp::Client::set_command(std::string command, std::string command_three_c
         if (_socket_data->get_data_mode() == DATA_NONE)
             set_mode_data(DATA_PORT);
     }
+    if (command == "STOR")
+        _command = STOR;
     if (command == "LIST")
         _command = LIST;
 

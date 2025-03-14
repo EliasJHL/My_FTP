@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 13:54:14 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 15:40:43 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 12:53:41 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Factory.hpp"
@@ -24,7 +24,7 @@ myftp::Factory::Factory() {
     commands[COMMAND::CDUP] = new CdupCommand();
     commands[COMMAND::PASV] = new PasvCommand();
     commands[COMMAND::PORT] = new PortCommand();
-    //commands[COMMAND::STOR] = new StorCommand();
+    commands[COMMAND::STOR] = new StorCommand();
     commands[COMMAND::DELE] = new DeleCommand();
 }
 

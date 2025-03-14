@@ -5,11 +5,13 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 13:48:54 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sat Mar 14 12:16:42 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 22:15:13 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Server.hpp"
 #include "Client.hpp"
+#include <signal.h>
+#include <sys/wait.h>
 
 myftp::Server::Server(int port, char start_path[2048]) {
     _server_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -124,6 +126,22 @@ void myftp::Server::start_loop() {
                 }
                 _clients[client_index].process_command(*this, i);
                 _poll_fds[i].events &= ~POLLOUT;
+            }
+        }
+        for (size_t i = 0; i < _clients.size(); i++) {
+            if (_clients[i]._transfer_pid > 0) {
+                int status;
+                pid_t result = waitpid(_clients[i]._transfer_pid, &status, WNOHANG);
+                if (result > 0) {
+                    _clients[i]._transfer_pid = -1;
+                    if (_clients[i].get_mode_data() == DATA_PASV) {
+                        if (_clients[i].get_fd_data() != -1) {
+                            close(_clients[i].get_fd_data());
+                            _clients[i].set_fd_data(-1);
+                        }
+                        _clients[i].set_mode_data(DATA_NONE);
+                    }
+                }
             }
         }
     }

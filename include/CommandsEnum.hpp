@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 14:02:38 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sat Mar 14 11:08:56 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 12:56:42 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef COMMANDSENUM_HPP_
@@ -27,7 +27,8 @@ namespace myftp {
         CDUP = 10,
         DELE = 11,
         PORT = 12,
-        LIST = 13
+        LIST = 13,
+        STOR = 14
     };
 }
 

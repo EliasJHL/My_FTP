@@ -5,11 +5,13 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 15:30:34 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sat Mar 14 12:16:05 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 22:15:19 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "RetrCommand.hpp"
 #include "../Client.hpp"
+#include <signal.h>
+#include <sys/wait.h>
 
 myftp::RetrCommand::RetrCommand()
 {
@@ -20,6 +22,11 @@ myftp::RetrCommand::~RetrCommand()
 }
 
 void myftp::RetrCommand::execute(Client &client, Server &server, int i, std::string arg) {
+    if (client._transfer_pid > 0) {
+        int status;
+        waitpid(client._transfer_pid, &status, WNOHANG);
+        client._transfer_pid = -1;
+    }
     if (client._transfer_pid != -1) {
         kill(client._transfer_pid, SIGKILL);
         client._transfer_pid = -1;

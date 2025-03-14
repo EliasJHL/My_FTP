@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 14:58:38 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sat Mar 14 11:48:11 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 21:26:57 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "PasvCommand.hpp"
@@ -20,12 +20,10 @@ myftp::PasvCommand::~PasvCommand()
 }
 
 void myftp::PasvCommand::execute(Client &client, Server &server, int i, std::string arg) {
-
-    if (client.get_mode_data() != DATA_PASV) {
-        write(client.get_fd(), "500 Active is already running.\r\n", 32);
-        return;
+    if (client.get_fd_data() != -1) {
+        close(client.get_fd_data());
+        client.set_fd_data(-1);
     }
-    
     char pasv[1024];
     std::string ip_adress;
     
