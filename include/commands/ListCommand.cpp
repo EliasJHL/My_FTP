@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 15:19:04 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 21:37:46 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 12:24:26 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "ListCommand.hpp"
@@ -47,11 +47,14 @@ void myftp::ListCommand::execute(Client &client, Server &server, int i, std::str
     pclose(pipe);
     result = result.substr(result.find("\n") + 1);
     if (client.get_mode_data() == DATA_PASV) {
+        write(client.get_fd(), "150 File status okay; about to open data connection.\r\n", 54);
         int data_fd = accept(client.get_fd_data(), NULL, NULL);
         write(data_fd, result.c_str(), result.size());
         close(data_fd);
+        write(client.get_fd(), "226 Closing data connection.\r\n", 31);
         exit(EXIT_SUCCESS);
     } else if (client.get_mode_data() == DATA_PORT) {
+        write(client.get_fd(), "150 File status okay; about to open data connection.\r\n", 54);
         int sock;
         struct sockaddr_in addr;
         sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -64,10 +67,12 @@ void myftp::ListCommand::execute(Client &client, Server &server, int i, std::str
         }
         write(sock, result.c_str(), result.size());
         close(sock);
+        write(client.get_fd(), "226 Closing data connection.\r\n", 31);
+        exit(EXIT_SUCCESS);
+    } else {
+        write(client.get_fd(), "425 Can't open data connection.\r\n", 33);
         exit(EXIT_SUCCESS);
     }
-    write(client.get_fd(), "226 Closing data connection.\r\n", 31);
-    exit(EXIT_SUCCESS);
 };
 
 bool myftp::ListCommand::need_login() const {

@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 15:38:36 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sat Mar 14 11:03:54 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 12:37:13 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "CwdCommand.hpp"
@@ -21,14 +21,28 @@ myftp::CwdCommand::~CwdCommand()
 
 void myftp::CwdCommand::execute(Client &client, Server &server, int i, std::string arg) {
     char new_path[2048];
-    std::string temp_path = client.get_path() + "/" + arg;
+    std::string temp_path;
+
+    if (arg.empty()) {
+        write(client.get_fd(), "501 Syntax error in parameters or arguments.\r\n", 47);
+        return;
+    }
+
+    if (arg == "/") {
+        temp_path = client.get_home_path();
+    } else if (arg[0] == '/') {
+        temp_path = arg;
+    } else {
+        temp_path = client.get_path() + "/" + arg;
+    }
 
     int ret = chdir(temp_path.c_str());
     if (ret != -1) {
+        chdir(temp_path.c_str());
         getcwd(new_path, 2048);
-        std::string new_path(new_path);
+        std::string test_path(new_path);
 
-        if (new_path.find(client.get_home_path()) == std::string::npos) {
+        if (test_path.find(client.get_home_path()) == std::string::npos) {
             chdir(client.get_path().c_str());
             write(client.get_fd(), "550 Requested action not taken.\r\n", 34);
             return;

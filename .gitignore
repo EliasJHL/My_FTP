@@ -2,3 +2,4 @@ test.sh
 tests/
 myftp
 start.sh
+.vscode/

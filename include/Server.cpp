@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 13:48:54 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sat Mar 14 11:32:20 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 12:16:42 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Server.hpp"
@@ -86,9 +86,9 @@ void myftp::Server::start_loop() {
             int client_index = i - 1;
 
             if (_poll_fds[i].revents & POLLIN) {
-                char buffer[1024];
+                char buffer[4096];
                 std::string command;
-                ssize_t len = read(_poll_fds[i].fd, buffer, 1024);  
+                ssize_t len = read(_poll_fds[i].fd, buffer, 4096);  
 
                 if (len <= 0) {
                     std::perror("Error reading from client\n");
