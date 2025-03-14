@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 6 23:23:31 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 20:50:29 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Fri Mar 13 23:44:04 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef CLIENT_HPP_
@@ -58,19 +58,22 @@ namespace myftp {
             void set_path(std::string);
             std::string get_path();
 
+            void set_home_path(std::string);
+            std::string get_home_path();
+
             void login(std::string username, std::string password);
             pid_t _transfer_pid;
             
-            private:
-                bool _has_to_process;
-                bool _is_login;
-                Socket *_socket_data;
-                Accounts *_account_logged;
-                std::string _temp_username;
-                std::string _home_path;
-                std::string _current_path;
-                myftp::COMMAND _command;
-                std::string _data;
+        private:
+            bool _has_to_process;
+            bool _is_login;
+            Socket *_socket_data;
+            Accounts *_account_logged;
+            std::string _temp_username;
+            std::string _home_path;
+            std::string _current_path;
+            myftp::COMMAND _command;
+            std::string _data;
     };
 }
 

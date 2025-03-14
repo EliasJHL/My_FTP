@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 14:02:38 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 14:03:03 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 11:08:56 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #ifndef COMMANDSENUM_HPP_
@@ -13,6 +13,7 @@
 
 namespace myftp {
     enum COMMAND {
+        UNDEFINED = -1,
         NONE = 0,
         PASV = 1,
         QUIT = 2,

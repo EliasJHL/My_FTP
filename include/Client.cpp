@@ -5,13 +5,13 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 6 23:25:45 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 21:20:18 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 11:40:23 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Client.hpp"
 #include "Server.hpp"
 
-myftp::Client::Client(int fd, std::string current_path) {
+myftp::Client::Client(int fd, std::string start_path) {
     _socket_data = new Socket(fd);
     _has_to_process = true;
     _is_login = false;
@@ -19,8 +19,8 @@ myftp::Client::Client(int fd, std::string current_path) {
     _command = myftp::COMMAND::NONE;
     _account_logged = new Accounts;
     _temp_username = "";
-    _home_path = "";
-    _current_path = current_path;
+    _home_path = start_path;
+    _current_path = start_path;
     _data = "220 Service ready for new user.\r\n";
 };
 
@@ -73,6 +73,7 @@ void myftp::Client::set_port_data(std::string ip, std::string port) {
 }
 
 bool myftp::Client::set_command(std::string command, std::string command_three_char) {
+    _command = myftp::COMMAND::UNDEFINED;
     if (command == "USER")
         _command = USER;
     if (command == "PASS")
@@ -113,6 +114,14 @@ bool myftp::Client::set_command(std::string command, std::string command_three_c
 void myftp::Client::login(std::string username, std::string password) {
     _is_login = true;
     _account_logged->add_account(_temp_username, _data);
+}
+
+void myftp::Client::set_home_path(std::string path) {
+    _home_path = path;
+}
+
+std::string myftp::Client::get_home_path() {
+    return _home_path;
 }
 
 void myftp::Client::set_temp_username(std::string username) {

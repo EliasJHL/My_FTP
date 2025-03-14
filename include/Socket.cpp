@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Wed Mar 12 14:14:10 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 16:01:19 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 11:45:27 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Socket.hpp"
@@ -49,5 +49,5 @@ std::string myftp::Socket::get_ip_data_mode() {
 }
 
 std::string myftp::Socket::get_port_data_mode() {
-    return _port_client_ip;
+    return _port_client_port;
 }

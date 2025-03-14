@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 14:52:09 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 21:22:27 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 11:18:30 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "QuitCommand.hpp"

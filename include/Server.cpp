@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 13:48:54 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Fri Mar 13 20:49:56 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 11:32:20 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Server.hpp"
@@ -79,8 +79,7 @@ void myftp::Server::start_loop() {
             });
 
             _clients.push_back(Client(_client_socket, _start_path));
-
-            printf("Connection from %s:%d\n", inet_ntoa(_client_addr.sin_addr), ntohs(_client_addr.sin_port));
+            std::cout << "Connection from " << inet_ntoa(_client_addr.sin_addr) << ":" << ntohs(_client_addr.sin_port) << std::endl;
         }
         
         for (int i = _poll_fds.size() - 1; i >= 1; i--) {
@@ -89,13 +88,15 @@ void myftp::Server::start_loop() {
             if (_poll_fds[i].revents & POLLIN) {
                 char buffer[1024];
                 std::string command;
-                int len = read(_poll_fds[i].fd, buffer, 1024);  
+                ssize_t len = read(_poll_fds[i].fd, buffer, 1024);  
 
                 if (len <= 0) {
                     std::perror("Error reading from client\n");
                     close(_poll_fds[i].fd);
+                    if (_clients[client_index].get_fd_data() != -1)
+                        kill(_clients[client_index].get_fd_data(), SIGKILL);
                     _poll_fds.erase(_poll_fds.begin() + i);
-                    _clients.erase(_clients.begin() + client_index);
+                    _clients.erase(_clients.begin() + i);
                     continue;
                 }
                 buffer[len] = '\0';
