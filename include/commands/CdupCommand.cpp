@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 15:09:46 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sat Mar 14 11:35:06 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sat Mar 14 12:38:45 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "CdupCommand.hpp"
@@ -21,6 +21,10 @@ myftp::CdupCommand::~CdupCommand()
 
 void myftp::CdupCommand::execute(Client &client, Server &server, int i, std::string arg) {
     char new_path[2048];
+    if (client.get_path() == client.get_home_path()) {
+        write(client.get_fd(), "550 Requested action not taken.\r\n", 34);
+        return;
+    }
     if (chdir("..") == 0) {
         getcwd(new_path, 2048);
         client.set_path(std::string(new_path));
