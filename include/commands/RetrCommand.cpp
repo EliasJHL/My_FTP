@@ -5,13 +5,14 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 15:30:34 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sun Mar 15 11:53:01 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sun Mar 15 19:37:40 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "RetrCommand.hpp"
 #include "../Client.hpp"
 #include <signal.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 myftp::RetrCommand::RetrCommand()
 {
@@ -19,6 +20,30 @@ myftp::RetrCommand::RetrCommand()
 
 myftp::RetrCommand::~RetrCommand()
 {
+}
+
+bool check_file_in_home(myftp::Client &client, std::string arg) {
+    char new_path[2048];
+    std::string temp_path;
+
+    if (arg == "/") {
+        temp_path = client.get_home_path();
+    } else if (arg[0] == '/') {
+        temp_path = arg;
+    } else {
+        temp_path = client.get_path() + "/" + arg;
+    }
+
+    if (realpath(temp_path.c_str(), new_path) == nullptr) {
+        write(client.get_fd(), "550 Path is not valid.\r\n", 24);
+        return false;
+    }
+    std::string test_path(new_path);
+    if (test_path.find(client.get_home_path()) == std::string::npos) {
+        write(client.get_fd(), "550 Requested action not taken.\r\n", 34);
+        return false;
+    }
+    return true;
 }
 
 void myftp::RetrCommand::execute(Client &client, Server &server, int i, std::string arg) {
@@ -31,6 +56,9 @@ void myftp::RetrCommand::execute(Client &client, Server &server, int i, std::str
         kill(client._transfer_pid, SIGKILL);
         client._transfer_pid = -1;
     }
+
+    if (!check_file_in_home(client, arg))
+        return;
     
     pid_t pid = fork();
 
