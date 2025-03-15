@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Fri Mar 14 12:46:44 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sat Mar 14 22:23:10 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sun Mar 15 01:33:56 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "StorCommand.hpp"
@@ -20,6 +20,7 @@ myftp::StorCommand::~StorCommand()
 }
 
 void myftp::StorCommand::execute(Client &client, Server &server, int i, std::string arg) {
+    write(client.get_fd(), "200 Command okay.\r\n", 19);
     // if (client._transfer_pid != -1) {
     //     kill(client._transfer_pid, SIGKILL);
     //     client._transfer_pid = -1;
