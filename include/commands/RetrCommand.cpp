@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 15:30:34 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sun Mar 15 19:37:40 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sun Mar 15 19:43:22 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "RetrCommand.hpp"
@@ -40,7 +40,7 @@ bool check_file_in_home(myftp::Client &client, std::string arg) {
     }
     std::string test_path(new_path);
     if (test_path.find(client.get_home_path()) == std::string::npos) {
-        write(client.get_fd(), "550 Requested action not taken.\r\n", 34);
+        write(client.get_fd(), "550 Requested action not taken.\r\n", 33);
         return false;
     }
     return true;

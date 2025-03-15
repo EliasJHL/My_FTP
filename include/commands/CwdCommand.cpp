@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 15:38:36 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sun Mar 15 19:34:08 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sun Mar 15 19:43:16 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "CwdCommand.hpp"
@@ -24,7 +24,7 @@ void myftp::CwdCommand::execute(Client &client, Server &server, int i, std::stri
     std::string temp_path;
 
     if (arg.empty()) {
-        write(client.get_fd(), "501 Syntax error in parameters or arguments.\r\n", 47);
+        write(client.get_fd(), "501 Syntax error in parameters or arguments.\r\n", 46);
         return;
     }
 
@@ -44,14 +44,14 @@ void myftp::CwdCommand::execute(Client &client, Server &server, int i, std::stri
 
         if (test_path.find(client.get_home_path()) == std::string::npos) {
             chdir(client.get_path().c_str());
-            write(client.get_fd(), "550 Requested action not taken.\r\n", 34);
+            write(client.get_fd(), "550 Requested action not taken.\r\n", 33);
             return;
         }
 
         client.set_path(std::string(new_path));
         write(client.get_fd(), "250 Requested file action okay, completed.\r\n", 44);
     } else {
-        write(client.get_fd(), "550 Requested action not taken.\r\n", 34);
+        write(client.get_fd(), "550 Requested action not taken.\r\n", 33);
     }
 };
 
