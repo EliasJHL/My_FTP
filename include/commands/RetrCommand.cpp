@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 15:30:34 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sun Mar 15 02:12:37 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sun Mar 15 11:53:01 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "RetrCommand.hpp"
@@ -60,7 +60,7 @@ void myftp::RetrCommand::execute(Client &client, Server &server, int i, std::str
                 write(data_fd, "\n", 1);
             }
             dataFile.close();
-            write(client.get_fd(), "226 Closing data connection.\r\n", 31);
+            write(client.get_fd(), "226 Closing data connection.\r\n", 30);
             close(data_fd);
             exit(EXIT_SUCCESS);
         } else {
@@ -96,7 +96,7 @@ void myftp::RetrCommand::execute(Client &client, Server &server, int i, std::str
                 write(sock, "\n", 1);
             }
             dataFile.close();
-            write(client.get_fd(), "226 Closing data connection.\r\n", 31);
+            write(client.get_fd(), "226 Closing data connection.\r\n", 30);
             close(sock);
             exit(EXIT_SUCCESS);
         } else {

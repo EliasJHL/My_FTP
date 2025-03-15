@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 13:48:54 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sun Mar 15 01:33:57 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sun Mar 15 11:47:52 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "Server.hpp"
@@ -47,6 +47,7 @@ myftp::Server::Server(int port, char start_path[2048]) {
 
 void myftp::Server::start_accounts() {
     _accounts.push_back(Accounts("Anonymous", " "));
+    _accounts.push_back(Accounts("Anonymous", ""));
     _accounts.push_back(Accounts());
 }
 

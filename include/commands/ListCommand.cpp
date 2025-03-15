@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Thu Mar 13 15:19:04 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sat Mar 14 22:06:57 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sun Mar 15 11:55:10 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "ListCommand.hpp"
@@ -52,7 +52,7 @@ void myftp::ListCommand::execute(Client &client, Server &server, int i, std::str
         write(data_fd, result.c_str(), result.size());
         close(data_fd);
         close(client.get_fd_data());
-        write(client.get_fd(), "226 Closing data connection.\r\n", 31);
+        write(client.get_fd(), "226 Closing data connection.\r\n", 30);
         exit(EXIT_SUCCESS);
     } else if (client.get_mode_data() == DATA_PORT) {
         write(client.get_fd(), "150 File status okay; about to open data connection.\r\n", 54);
@@ -68,7 +68,7 @@ void myftp::ListCommand::execute(Client &client, Server &server, int i, std::str
         }
         write(sock, result.c_str(), result.size());
         close(sock);
-        write(client.get_fd(), "226 Closing data connection.\r\n", 31);
+        write(client.get_fd(), "226 Closing data connection.\r\n", 30);
         exit(EXIT_SUCCESS);
     } else {
         write(client.get_fd(), "425 Can't open data connection.\r\n", 33);

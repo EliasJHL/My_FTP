@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Fri Mar 14 12:46:44 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sun Mar 15 02:14:50 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Sun Mar 15 11:55:28 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "StorCommand.hpp"
@@ -65,7 +65,7 @@ void myftp::StorCommand::execute(Client &client, Server &server, int i, std::str
                 dataFile.write(buffer, bytes);
             }
             dataFile.close();
-            write(client.get_fd(), "226 Closing data connection.\r\n", 31);
+            write(client.get_fd(), "226 Closing data connection.\r\n", 30);
             close(data_fd);
             exit(EXIT_SUCCESS);
         } else {
@@ -100,7 +100,7 @@ void myftp::StorCommand::execute(Client &client, Server &server, int i, std::str
                 dataFile.write(buffer, bytes);
             }
             dataFile.close();
-            write(client.get_fd(), "226 Closing data connection.\r\n", 31);
+            write(client.get_fd(), "226 Closing data connection.\r\n", 30);
             close(sock);
             exit(EXIT_SUCCESS);
         } else {
