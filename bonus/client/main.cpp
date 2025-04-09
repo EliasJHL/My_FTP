@@ -5,7 +5,7 @@
 ** Login   <elias-josue.hajjar-llauquen@epitech.eu>
 **
 ** Started on  Mon Feb 17 16:21:50 2025 Elias Josué HAJJAR LLAUQUEN
-** Last update Sun Mar 15 03:12:47 2025 Elias Josué HAJJAR LLAUQUEN
+** Last update Mon Mar 16 02:11:29 2025 Elias Josué HAJJAR LLAUQUEN
 */
 
 #include "client.hpp"
@@ -137,6 +137,9 @@ int main(int ac, char **av) {
                 data[size] = '\0';
                 std::cout << data;
             }
+            if (command.substr(0, 2) == "cd") {
+                
+            }
             if (command == "quit" || command == "exit") {
                 write(client._fd, "QUIT\r\n", 6);
                 size = read(client._fd, data, sizeof(data));
@@ -146,7 +149,6 @@ int main(int ac, char **av) {
             }
             std::cout << "ftp> ";
         }
-        
     } catch (std::runtime_error &e) {
         std::cout << e.what() << std::endl;
         return 84;
