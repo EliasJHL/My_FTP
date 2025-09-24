@@ -1,5 +1,4 @@
 # MyFTP
-[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/EliasJHL/My_FTP)
 
 A custom FTP (File Transfer Protocol) server implemented in C++ from scratch. This project, part of the Epitech curriculum, provides a robust server capable of handling multiple clients and standard FTP commands, featuring both active and passive data transfer modes.
 
